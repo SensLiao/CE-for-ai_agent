@@ -55,3 +55,6 @@ coverage.xml
 
 # Session data
 .cli-anything/
+
+# Claude Code / AI tooling
+CLAUDE.md
