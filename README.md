@@ -1,17 +1,6 @@
 <div align="right"><a href="README.zh-CN.md">简体中文</a></div>
 
-<p align="center"><img src="docs/hero.png" alt="CE Agent CLI banner" width="100%"></p>
-
-<p align="center"><b>Cheat-Engine-style process memory analysis as an AI-agent-ready CLI.</b></p>
-
-<p align="center">
-<img src="https://img.shields.io/badge/Python-3.9%2B-f43f5e?style=flat-square" alt="Python 3.9+">
-<img src="https://img.shields.io/badge/platform-Windows-f43f5e?style=flat-square" alt="Platform: Windows">
-<img src="https://img.shields.io/badge/version-0.2.0-f43f5e?style=flat-square" alt="Version 0.2.0">
-<img src="https://img.shields.io/badge/tests-98%20passing-f43f5e?style=flat-square" alt="98 tests passing">
-<img src="https://img.shields.io/badge/JSON-agent--ready-f43f5e?style=flat-square" alt="JSON: agent-ready">
-<img src="https://img.shields.io/badge/License-MIT-f43f5e?style=flat-square" alt="License: MIT">
-</p>
+<p align="center"><img src="docs/hero.png" alt="CE Agent CLI — Cheat-Engine-style process memory analysis as an AI-agent-ready CLI" width="100%"></p>
 
 CE Agent CLI (`cli-anything-cheatengine`) reimplements Cheat Engine's core workflow — process attach, typed memory read/write, value scanning, cheat-table (`.CT`) CRUD, assembly/disassembly, and symbol resolution — as a Windows command-line tool. Every command speaks a `--json` contract designed for AI agents, and an optional named-pipe bridge drives a running Cheat Engine 7.x instance (speedhack, debugger, auto-assemble, PDB symbols) when one is present. It is built for local debugging, security research, and process introspection.
 
@@ -27,9 +16,14 @@ CE Agent CLI (`cli-anything-cheatengine`) reimplements Cheat Engine's core workf
 - **Optional assembly/disassembly** — Capstone and Keystone power disassembly and assembly when the `[asm]` extra is installed.
 - **Cheat Engine 7.x bridge** — drives speedhack, debugger, and auto-assemble over a named pipe, degrading gracefully when CE is not running.
 
-## 🏗 How it works
+## 🏗 Architecture
 
-CE Agent CLI attaches to a target process and exposes Cheat Engine's core operations as composable subcommands. You read and write typed values, scan committed memory regions for values, create and edit cheat tables (`.CT`), assemble and disassemble code, and resolve symbols — each command emitting either human-readable text or structured `--json`. When a Cheat Engine 7.x instance is running, an optional named-pipe bridge adds speedhack, the debugger, auto-assemble, and PDB symbols; when it is not, those features degrade gracefully and the standalone CLI keeps working.
+<p align="center"><img src="docs/architecture.png" alt="CE Agent CLI architecture: CLI command groups over a ctypes core, with an optional Cheat Engine bridge" width="100%"></p>
+<p align="center"><sub>A self-contained core over the Windows API, plus an optional bridge to a running Cheat Engine 7.x.</sub></p>
+
+The CLI is the whole surface: eight command groups — `process`, `memory`, `scan`, `table`, `asm`, `symbol`, `session`, and `bridge` — sit on top of a core that does process attach, typed memory reads and writes, value scanning over committed regions, `.CT` cheat-table CRUD, assembly and disassembly, and symbol resolution. That core talks to Windows directly through `ctypes`, with no `pywin32` layer in between, which is why the standalone tool has no dependency on Cheat Engine itself.
+
+The dashed path in the diagram is the optional half. When a Cheat Engine 7.x instance is running, the CLI connects to it over a named pipe and gains speedhack, the debugger, auto-assemble, and PDB symbols; when it is not, those features degrade gracefully and everything in the core keeps working. Cutting across both halves is the global `--json` flag: any command can emit structured output instead of human-readable text, which — together with the shipped `SKILL.md` descriptor — is the contract an AI agent drives the tool through.
 
 ## 🧰 Tech stack
 
@@ -63,10 +57,6 @@ pytest
 ```
 
 98 tests (79 core + 19 CLI) run without administrator rights or a live target process.
-
-## 📌 Project status
-
-Version 0.2.0.
 
 ## 📄 License
 

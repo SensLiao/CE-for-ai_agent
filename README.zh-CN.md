@@ -1,17 +1,6 @@
 <div align="right"><a href="README.md">English</a></div>
 
-<p align="center"><img src="docs/hero.png" alt="CE Agent CLI banner" width="100%"></p>
-
-<p align="center"><b>以 AI agent 友好的 CLI，提供 Cheat Engine 风格的进程内存分析。</b></p>
-
-<p align="center">
-<img src="https://img.shields.io/badge/Python-3.9%2B-f43f5e?style=flat-square" alt="Python 3.9+">
-<img src="https://img.shields.io/badge/platform-Windows-f43f5e?style=flat-square" alt="Platform: Windows">
-<img src="https://img.shields.io/badge/version-0.2.0-f43f5e?style=flat-square" alt="Version 0.2.0">
-<img src="https://img.shields.io/badge/tests-98%20passing-f43f5e?style=flat-square" alt="98 tests passing">
-<img src="https://img.shields.io/badge/JSON-agent--ready-f43f5e?style=flat-square" alt="JSON: agent-ready">
-<img src="https://img.shields.io/badge/License-MIT-f43f5e?style=flat-square" alt="License: MIT">
-</p>
+<p align="center"><img src="docs/hero.png" alt="CE Agent CLI —— 以 AI agent 友好的 CLI 提供 Cheat Engine 风格的进程内存分析" width="100%"></p>
 
 CE Agent CLI（`cli-anything-cheatengine`）将 Cheat Engine 的核心工作流 —— 进程附加、带类型的内存读写、数值扫描、cheat table（`.CT`）增删改查、汇编/反汇编，以及符号解析 —— 重新实现为一个 Windows 命令行工具。每条命令都遵循为 AI agent 设计的 `--json` 契约；当有正在运行的 Cheat Engine 7.x 实例时，一个可选的命名管道桥接可驱动该实例（speedhack、调试器、auto-assemble、PDB 符号）。它面向本地调试、安全研究与进程自省而构建。
 
@@ -27,9 +16,14 @@ CE Agent CLI（`cli-anything-cheatengine`）将 Cheat Engine 的核心工作流 
 - **可选的汇编/反汇编** —— 安装 `[asm]` 附加项后，由 Capstone 与 Keystone 提供反汇编与汇编能力。
 - **Cheat Engine 7.x 桥接** —— 通过命名管道驱动 speedhack、调试器与 auto-assemble；当 CE 未运行时优雅降级。
 
-## 🏗 工作原理
+## 🏗 架构
 
-CE Agent CLI 附加到目标进程，并将 Cheat Engine 的核心操作暴露为可组合的子命令。你可以读写带类型的数值、在已提交的内存区域中扫描数值、创建与编辑 cheat table（`.CT`）、汇编与反汇编代码，以及解析符号 —— 每条命令既可输出人类可读的文本，也可输出结构化的 `--json`。当有 Cheat Engine 7.x 实例在运行时，一个可选的命名管道桥接会补充 speedhack、调试器、auto-assemble 与 PDB 符号；当其未运行时，这些功能会优雅降级，独立的 CLI 仍可继续工作。
+<p align="center"><img src="docs/architecture.png" alt="CE Agent CLI 架构：命令组之上的 CLI、基于 ctypes 的内核，以及可选的 Cheat Engine 桥接" width="100%"></p>
+<p align="center"><sub>一个直接架在 Windows API 之上的自足内核，外加一条通往运行中 Cheat Engine 7.x 的可选桥接。</sub></p>
+
+CLI 就是全部对外表面：八个命令组 —— `process`、`memory`、`scan`、`table`、`asm`、`symbol`、`session` 与 `bridge` —— 架在一个内核之上，由该内核完成进程附加、带类型的内存读写、在已提交（committed）区域上的数值扫描、`.CT` cheat table 增删改查、汇编与反汇编，以及符号解析。这个内核通过 `ctypes` 直接与 Windows 对话，中间不经过 `pywin32`；这也正是独立工具本身并不依赖 Cheat Engine 的原因。
+
+图中的虚线路径是可选的另一半。当有 Cheat Engine 7.x 实例在运行时，CLI 会通过命名管道与其连接，从而获得 speedhack、调试器、auto-assemble 与 PDB 符号；当其未运行时，这些功能会优雅降级，内核中的一切仍可继续工作。贯穿两半的是全局 `--json` 开关：任何命令都可以输出结构化结果而非人类可读文本 —— 它与随附的 `SKILL.md` 描述文件一起，构成了 AI agent 驱动本工具所依赖的契约。
 
 ## 🧰 技术栈
 
@@ -63,10 +57,6 @@ pytest
 ```
 
 98 项测试（79 项核心 + 19 项 CLI）无需管理员权限或运行中的目标进程即可执行。
-
-## 📌 项目状态
-
-版本 0.2.0。
 
 ## 📄 许可证
 
