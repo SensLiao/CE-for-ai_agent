@@ -106,6 +106,14 @@ A structured envelope — no administrator rights needed for this one:
 
 Failures come back in the same shape — `{"success": false, "error": "..."}` — and **still exit 0**, so branch on the `success` field rather than the exit code. Without administrator rights, any command that attaches to a process returns a clear permission error instead of failing silently; see [Privileges](#-privileges).
 
+## 🖥 A real session
+
+<p align="center"><img src="docs/cli-session.png" alt="Terminal session: the CLI help listing eight command groups, scan --help, a live process list, and 104 tests passing in 0.53s" width="100%"></p>
+
+<p align="center"><sub>Captured from an actual run on Windows 11 with <strong>no Cheat Engine installed</strong> — process enumeration goes through the native Windows API, which is the whole point of the standalone path. The 104-test suite runs in 0.53s and needs no target process, so it is safe to run in CI.</sub></p>
+
+Two things worth noticing in that output. `process list` works with no target attached and no elevation, because enumeration and attachment are separate privileges — see [Privileges](#-privileges). And every group resolves to leaf commands that take `--json`, so the same session an operator drives by hand is the session an agent drives by parsing stdout.
+
 ## 📖 Common workflows
 
 ### Find a value in a running process and freeze it
